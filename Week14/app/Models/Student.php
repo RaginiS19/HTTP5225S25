@@ -11,4 +11,9 @@ class Student extends Model
 
     protected $fillable = ['fname', 'lname', 'email'];
     protected $dates = ['deleted_at'];
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class);
+    }
 }

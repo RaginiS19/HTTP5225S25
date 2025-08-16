@@ -16,6 +16,7 @@
             <th>#</th>
             <th>Name</th>
             <th>Email</th>
+            <th>Courses</th>
             <th class="text-end">Actions</th>
           </tr>
         </thead>
@@ -29,6 +30,14 @@
                 </a>
               </td>
               <td>{{ $student->email }}</td>
+              <td>
+                @foreach($student->courses as $course)
+                  <span class="badge bg-primary me-1">{{ $course->name }}</span>
+                @endforeach
+                @if($student->courses->isEmpty())
+                  <span class="text-muted">No courses enrolled</span>
+                @endif
+              </td>
               <td class="text-end">
                 <a href="{{ route('students.edit', $student) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                 <form action="{{ route('students.destroy', $student) }}" method="POST" class="d-inline"
@@ -40,7 +49,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="4" class="text-center p-4">No students found.</td>
+              <td colspan="5" class="text-center p-4">No students found.</td>
             </tr>
           @endforelse
         </tbody>

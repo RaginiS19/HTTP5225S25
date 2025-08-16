@@ -26,6 +26,31 @@
         Created {{ $student->created_at->diffForHumans() }} • Updated {{ $student->updated_at->diffForHumans() }}
       </div>
     </div>
+
+    @if($student->courses->isNotEmpty())
+      <div class="card mt-3">
+        <div class="card-header">
+          <strong>Enrolled Courses</strong>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            @foreach($student->courses as $course)
+              <div class="col-md-6 mb-3">
+                <div class="card">
+                  <div class="card-body">
+                    <h6 class="card-title">{{ $course->name }}</h6>
+                    <p class="card-text text-muted">{{ $course->description ?? 'No description available' }}</p>
+                    @if($course->professor)
+                      <small class="text-muted">Professor: {{ $course->professor->name }}</small>
+                    @endif
+                  </div>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+    @endif
   </div>
 </div>
 @endsection

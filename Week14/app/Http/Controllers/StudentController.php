@@ -3,19 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Models\Course;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
     public function index()
     {
-        $students = Student::latest()->paginate(10);
+        $students = Student::with('courses')->latest()->paginate(10);
         return view('students.index', compact('students'));
     }
 
     public function create()
     {
-        return view('students.create');
+        $courses = Course::all();
+        return view('students.create', compact('courses'));
     }
 
     public function store(Request $request)
@@ -24,10 +26,21 @@ class StudentController extends Controller
             'fname' => ['required','string','max:255'],
             'lname' => ['required','string','max:255'],
             'email' => ['nullable','email','max:255'],
+            'course_ids' => ['nullable', 'array'],
+            'course_ids.*' => ['exists:courses,id']
         ]);
 
         try {
-            Student::create($validated);
+            $student = Student::create([
+                'fname' => $validated['fname'],
+                'lname' => $validated['lname'],
+                'email' => $validated['email']
+            ]);
+
+            if (isset($validated['course_ids'])) {
+                $student->courses()->attach($validated['course_ids']);
+            }
+
             return redirect()->route('students.index')->with('success', 'Student created successfully.');
         } catch (\Throwable $e) {
             report($e);
@@ -37,12 +50,15 @@ class StudentController extends Controller
 
     public function show(Student $student)
     {
+        $student->load('courses');
         return view('students.show', compact('student'));
     }
 
     public function edit(Student $student)
     {
-        return view('students.edit', compact('student'));
+        $courses = Course::all();
+        $student->load('courses');
+        return view('students.edit', compact('student', 'courses'));
     }
 
     public function update(Request $request, Student $student)
@@ -51,10 +67,23 @@ class StudentController extends Controller
             'fname' => ['required','string','max:255'],
             'lname' => ['required','string','max:255'],
             'email' => ['nullable','email','max:255'],
+            'course_ids' => ['nullable', 'array'],
+            'course_ids.*' => ['exists:courses,id']
         ]);
 
         try {
-            $student->update($validated);
+            $student->update([
+                'fname' => $validated['fname'],
+                'lname' => $validated['lname'],
+                'email' => $validated['email']
+            ]);
+
+            if (isset($validated['course_ids'])) {
+                $student->courses()->sync($validated['course_ids']);
+            } else {
+                $student->courses()->detach();
+            }
+
             return redirect()->route('students.index')->with('success', 'Student updated successfully.');
         } catch (\Throwable $e) {
             report($e);
